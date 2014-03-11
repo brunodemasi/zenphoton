@@ -54,13 +54,15 @@ void handleSigint(int)
 
 int main(int argc, char **argv)
 {
-    if (argc != 3) {
+    if (argc < 3 || argc > 4) {
         fprintf(stderr,
             "\n"
             "High Quality Zen: The batch renderer for Zen photon garden\n"
             "\n"
-            "usage: hqz <scene.json> <output.png>\n"
+            "usage: hqz <scene.json> <output.png> [-i]\n"
             "  (Either may be \"-\" for stdin/stdout)\n"
+            "\n"
+            "-i to ignore existing output file"
             "\n"
             "Copyright (c) 2013 Micah Elizabeth Scott <micah@scanlime.org>\n"
             "https://github.com/scanlime/zenphoton\n"
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
     }
     
     FILE *outputFT = argv[2][0] == '-' ? stdin : fopen(argv[2], "r");
-    if (outputFT) {
+    if ((outputFT) && argv[3] != "-i"){
         perror("File existing");
         return 3;
     }
