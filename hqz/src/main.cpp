@@ -73,7 +73,15 @@ int main(int argc, char **argv)
         perror("Error opening scene file");
         return 2;
     }
+    
+    FILE *outputFT = argv[2][0] == '-' ? stdin : fopen(argv[2], "r");
+    if (outputFT) {
+        perror("File existing");
+        return 3;
+    }
 
+    //if argv[2] == //get file list
+    
     FILE *outputF = argv[2][0] == '-' ? stdout : fopen(argv[2], "wb");
     if (!outputF) {
         perror("Error opening output file");
