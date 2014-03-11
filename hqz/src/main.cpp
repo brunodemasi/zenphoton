@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     }
     
     FILE *outputFT = argv[2][0] == '-' ? stdin : fopen(argv[2], "r");
-    if ((outputFT) && argv[3] != "-i"){
+    if (outputFT && argc == 4 && argv[3] != "-i"){
         perror("File existing");
         return 3;
     }
