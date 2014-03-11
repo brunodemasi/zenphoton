@@ -79,8 +79,6 @@ int main(int argc, char **argv)
         perror("File existing");
         return 3;
     }
-
-    //if argv[2] == //get file list
     
     FILE *outputF = argv[2][0] == '-' ? stdout : fopen(argv[2], "wb");
     if (!outputF) {
