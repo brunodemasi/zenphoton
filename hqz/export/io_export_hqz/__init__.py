@@ -80,7 +80,7 @@ import mathutils
 from math import pi, floor, fabs
 import os
 
-debug = False #remove all newlines to read with wireframe.html
+debug = True #remove all newlines to read with wireframe.html
 
 
 ####UTILITY FUNCTIONS
@@ -140,20 +140,20 @@ def prepare(context):
     ###add object ID properties
     for obj in sc.objects:
         if obj.type == 'LAMP' and obj.is_visible(sc):
-            if not "hqz_1_light_start" in obj:
-                obj["hqz_1_light_start"] = 0.0
-            if not "hqz_2_light_end" in obj:
-                obj["hqz_2_light_end"] = 0.0
-            if not "hqz_3_spectral_light" in obj:
-                obj["hqz_3_spectral_light"] = True
-            if not "hqz_4_spectral_start" in obj:
-                obj["hqz_4_spectral_start"] = 400.0
-            if not "hqz_5_spectral_end" in obj:
-                obj["hqz_5_spectral_end"] = 700.0
+            if not "hqz_1_light_start" in obj.data:
+                obj.data["hqz_1_light_start"] = 0.0
+            if not "hqz_2_light_end" in obj.data:
+                obj.data["hqz_2_light_end"] = 0.0
+            if not "hqz_3_spectral_light" in obj.data:
+                obj.data["hqz_3_spectral_light"] = True
+            if not "hqz_4_spectral_start" in obj.data:
+                obj.data["hqz_4_spectral_start"] = 400.0
+            if not "hqz_5_spectral_end" in obj.data:
+                obj.data["hqz_5_spectral_end"] = 700.0
                 
         if obj.type == 'MESH' and obj.is_visible(sc):
-            if not "hqz_material" in obj:
-                obj["hqz_material"] = 0
+            if not "hqz_material" in obj.data:
+                obj.data["hqz_material"] = 0
     
     ###settings for freestyle export
     if sc.hqz_export_3D:
@@ -205,7 +205,7 @@ def prepare(context):
                 for grp in range(5): #remove mesh object from all groups
                     if obj.name in bpy.data.groups[str(grp)].objects:
                         bpy.data.groups[str(grp)].objects.unlink(obj)
-                current_group = str(obj["hqz_material"])
+                current_group = str(obj.data["hqz_material"])
                 bpy.data.groups[current_group].objects.link(obj)
         
     else:
@@ -232,7 +232,7 @@ def export(context):
         start_frame = sc.frame_current
         frame_range = start_frame,
         
-    ###DIRTY LOOP FOR BASH SCRIPT.
+    ###DIRTY LOOP FOR BATCH SCRIPT.
     if sc.hqz_batch:
         platform = os.sys.platform
         shell_path = sc.hqz_directory +'batch'
@@ -247,7 +247,10 @@ def export(context):
                 + '" "'+ sc.hqz_directory  + sc.hqz_file \
                 + '_' + str(frame).zfill(4) +'.json" "'  \
                 + sc.hqz_directory  + sc.hqz_file + '_' \
-                + str(frame).zfill(4) +'.png"\n'
+                + str(frame).zfill(4) +'.png"'
+            if sc.hqz_ignore:
+                shell_script += ' -i'
+            shell_script += '\n'
         file = open(shell_path, 'w')
         file.write(shell_script)
         file.close()
@@ -304,9 +307,9 @@ def export(context):
                                 break
                         
                 if not light_obstacle:
-                    use_spectral = light["hqz_3_spectral_light"]
-                    spectral_start = light["hqz_4_spectral_start"]
-                    spectral_end = light["hqz_5_spectral_end"]
+                    use_spectral = light.data["hqz_3_spectral_light"]
+                    spectral_start = light.data["hqz_4_spectral_start"]
+                    spectral_end = light.data["hqz_5_spectral_end"]
                     wav = HSV2wavelength(light.data.color)
                     if not sc.hqz_export_3D:###2D EXPORT
                         x, y = get_loc(context, light)
@@ -325,8 +328,8 @@ def export(context):
                         scene_code += str(x) + ', '                                                   #XPOS
                         scene_code += str(y)                                                          #YPOS
                         scene_code += ', [0, 360], ['                                                 #POLAR ANGLE
-                        scene_code += str(light["hqz_1_light_start"]) + ', ' #POLAR DISTANCE MIN
-                        scene_code += str(light["hqz_2_light_end"]) + '], [' #POLAR DISTANCE MAX
+                        scene_code += str(light.data["hqz_1_light_start"]) + ', ' #POLAR DISTANCE MIN
+                        scene_code += str(light.data["hqz_2_light_end"]) + '], [' #POLAR DISTANCE MAX
                         if light.data.type == 'SPOT':
                             scene_code += str(rot-light.data.spot_size*90/pi) + ', '               #ANGLE
                             scene_code +=  str(rot+light.data.spot_size*90/pi) + '], '
@@ -353,7 +356,7 @@ def export(context):
                     for edge in obj.data.edges:
                         edgev = []
                         vertices = list(edge.vertices)
-                        material = obj["hqz_material"]
+                        material = obj.data["hqz_material"]
                         edgev.append(material)
                         edgev.append(obj.matrix_world*obj.data.vertices[vertices[0]].co)
                         edgev.append(obj.matrix_world*obj.data.vertices[vertices[1]].co)
@@ -497,6 +500,10 @@ def init_properties():
         name="Export batch file",
         default=True)
         
+    scene_type.hqz_ignore = bpy.props.BoolProperty(
+        name="Ignore existing file",
+        default=False)
+        
         
     scene_type.hqz_resolution_x = bpy.props.IntProperty(
         name="X resolution",
@@ -638,6 +645,9 @@ class HQZPanel(bpy.types.Panel):
         row = col.row(align=True)
         row.prop(sc,"hqz_batch")
         row = col.row(align=True)
+        if debug:
+            row.prop(sc,"hqz_ignore")
+            row = col.row(align=True)
         
         col.label(" ")
         col.label("Export settings")
