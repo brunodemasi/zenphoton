@@ -80,7 +80,7 @@ import mathutils
 from math import pi, floor, fabs
 import os
 
-debug = True #remove all newlines to read with wireframe.html
+debug = False #remove all newlines to read with wireframe.html
 
 
 ####UTILITY FUNCTIONS
@@ -260,9 +260,6 @@ def export(context):
     for frame in frame_range:
         print('exporting frame',frame)
         
-        #####FRAME SETTINGS OVERRIDE GENERAL SETTINGS
-        seed = frame
-        
         ####GET FREESTYLE POINTS
         
         if sc.hqz_export_3D:
@@ -313,6 +310,7 @@ def export(context):
                     wav = HSV2wavelength(light.data.color)
                     if not sc.hqz_export_3D:###2D EXPORT
                         x, y = get_loc(context, light)
+                        view_coords = (1,1,1)
                     else:###FREESTYLE EXPORT
                         view_coords = bpy_extras.object_utils.world_to_camera_view(sc, sc.camera, light.location)
                         #print(view_coords)
@@ -394,7 +392,7 @@ def export(context):
                             normal -= 360
                         scene_code += ',' + str(normal) + '],'                           #VERT2 NORMAL
                     scene_code += '\n'
-                scene_code = scene_code[:-2]#remove last comma
+            scene_code = scene_code[:-2]#remove last comma
             
         else: ###FREESTYLE EXPORT
             point_list = eval(sc['hqz_3D_objects_string'])
@@ -452,7 +450,7 @@ def export(context):
         #print(materials)
         
         for mat in materials:
-            scene_code += '        [ [ ' + str(mat[0]) + ', "d" ],[ ' + str(mat[1]) + ', "t" ],[ ' + str(mat[2]) + ', "r" ] ],\n'
+            scene_code += '        [ [ ' + str(mat[0]) + ', "d" ], [ ' + str(mat[1]) + ', "t" ], [ ' + str(mat[2]) + ', "r" ] ],\n'
                 
         scene_code = scene_code[:-2]#remove last comma
         scene_code += '\n    ]\n'
@@ -626,6 +624,9 @@ class HQZPanel(bpy.types.Panel):
     bl_idname = "3D_VIEW_PT_hqz"
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
+    if bpy.app.version[1] > 69:
+        bl_category = "Export"
+        bl_context = "objectmode"
     
     
     def draw(self,context):
