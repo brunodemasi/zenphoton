@@ -237,7 +237,7 @@ def export(context):
         platform = os.sys.platform
         shell_path = sc.hqz_directory +'batch'
         shell_script = ''
-        if True:#'win' in platform:
+        if 'win' in platform:
             shell_path += '.bat'
             for frame in frame_range:
                 if sc.hqz_ignore:
