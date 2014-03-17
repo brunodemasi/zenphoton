@@ -239,10 +239,11 @@ def export(context):
         shell_script = ''
         if 'win' in platform:
             shell_path += '.bat'
+            shell_script += 'ECHO off\n\n'
             for frame in frame_range:
                 if sc.hqz_ignore:
-                    shell_script += 'if exist "' + sc.hqz_directory + sc.hqz_file + '_' + str(frame).zfill(4) + '.png' + '" (\n    rem Ignoring existing file\n) else (\n    "'
-                shell_script += 'echo "Rendering image ' + sc.hqz_file + '_' + str(frame).zfill(4) + '"\n    "' + sc.hqz_engine + 'hqz' \
+                    shell_script += 'if exist "' + sc.hqz_directory + sc.hqz_file + '_' + str(frame).zfill(4) + '.png' + '" (\n    ECHO Ignoring existing file\n) else (\n    '
+                shell_script += 'ECHO Rendering image ' + sc.hqz_file + '_' + str(frame).zfill(4) + '\n    "' + sc.hqz_engine + 'hqz' \
                     + '" "'+ sc.hqz_directory  + sc.hqz_file \
                     + '_' + str(frame).zfill(4) +'.json" "'  \
                     + sc.hqz_directory  + sc.hqz_file + '_' \
