@@ -80,7 +80,7 @@ import mathutils
 from math import pi, floor, fabs
 import os
 
-debug = True #remove all newlines to read with wireframe.html
+debug = False #remove all newlines to read with wireframe.html
 
 
 ####UTILITY FUNCTIONS
@@ -237,20 +237,33 @@ def export(context):
         platform = os.sys.platform
         shell_path = sc.hqz_directory +'batch'
         shell_script = ''
-        if 'win' in platform:
+        if True:#'win' in platform:
             shell_path += '.bat'
+            for frame in frame_range:
+                if sc.hqz_ignore:
+                    shell_script += 'if exist "' + sc.hqz_directory + sc.hqz_file + '_' + str(frame).zfill(4) + '.png' + '" (\n    rem Ignoring existing file\n) else (\n    "'
+                shell_script += 'echo "Rendering image ' + sc.hqz_file + '_' + str(frame).zfill(4) + '"\n    "' + sc.hqz_engine + 'hqz' \
+                    + '" "'+ sc.hqz_directory  + sc.hqz_file \
+                    + '_' + str(frame).zfill(4) +'.json" "'  \
+                    + sc.hqz_directory  + sc.hqz_file + '_' \
+                    + str(frame).zfill(4) +'.png"'
+                if sc.hqz_ignore:
+                    shell_script += '\n)'
+                shell_script += '\n\n'
         else:
             shell_path += '.sh'
             shell_script += '#!/bin/bash\n\n'
-        for frame in frame_range:
-            shell_script += '"' + sc.hqz_engine + 'hqz' \
-                + '" "'+ sc.hqz_directory  + sc.hqz_file \
-                + '_' + str(frame).zfill(4) +'.json" "'  \
-                + sc.hqz_directory  + sc.hqz_file + '_' \
-                + str(frame).zfill(4) +'.png"'
-            if sc.hqz_ignore:
-                shell_script += ' -i'
-            shell_script += '\n'
+            for frame in frame_range:
+                if sc.hqz_ignore:
+                    shell_script += 'if [ -f "' + sc.hqz_directory + sc.hqz_file + '_' + str(frame).zfill(4) + '.png' + '" ]\nthen\n    echo "Ignoring existing file"\nelse\n     '
+                shell_script += 'echo "Rendering image ' + sc.hqz_file + '_' + str(frame).zfill(4) + '" && "' + sc.hqz_engine + 'hqz' \
+                    + '" "'+ sc.hqz_directory  + sc.hqz_file \
+                    + '_' + str(frame).zfill(4) +'.json" "'  \
+                    + sc.hqz_directory  + sc.hqz_file + '_' \
+                    + str(frame).zfill(4) +'.png"'
+                if sc.hqz_ignore:
+                    shell_script += '\nfi'
+                shell_script += '\n\n'
         file = open(shell_path, 'w')
         file.write(shell_script)
         file.close()
@@ -646,9 +659,8 @@ class HQZPanel(bpy.types.Panel):
         row = col.row(align=True)
         row.prop(sc,"hqz_batch")
         row = col.row(align=True)
-        if debug:
-            row.prop(sc,"hqz_ignore")
-            row = col.row(align=True)
+        row.prop(sc,"hqz_ignore")
+        row = col.row(align=True)
         
         col.label(" ")
         col.label("Export settings")
