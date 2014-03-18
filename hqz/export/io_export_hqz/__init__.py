@@ -151,7 +151,7 @@ def prepare(context):
             if not "hqz_5_spectral_end" in obj.data:
                 obj.data["hqz_5_spectral_end"] = 700.0
                 
-        if obj.type == 'MESH' and obj.is_visible(sc):
+        if obj.type in ['MESH', 'CURVE', 'META', 'FONT', 'SURFACE'] and obj.is_visible(sc):
             if not "hqz_material" in obj.data:
                 obj.data["hqz_material"] = 0
     
@@ -201,7 +201,7 @@ def prepare(context):
                 bpy.data.groups.new(str(grp))
                 
         for obj in sc.objects:
-            if obj.type == 'MESH' and obj.is_visible(sc):
+            if obj.type in ['MESH', 'CURVE', 'META', 'FONT', 'SURFACE']  and obj.is_visible(sc):
                 for grp in range(5): #remove mesh object from all groups
                     if obj.name in bpy.data.groups[str(grp)].objects:
                         bpy.data.groups[str(grp)].objects.unlink(obj)
